@@ -1,5 +1,5 @@
 COMPILER ArchivoPrueba2
-a
+
 CHARACTERS 
 
 letra = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".
@@ -20,6 +20,5 @@ identificador = letra{letra|digito} EXCEPT KEYWORDS.
 numero = digito{digito}.
 numeroHex = digitoHex{digitoHex}"H".
 tabulador = tab.
-
 
 END ArchivoPrueba2

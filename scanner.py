@@ -6,23 +6,30 @@ characters = {
     'A': 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
     'B': '01234567890',
     'C': '01234567890ABCDEF',
-    'D': '	',
+    'D': '	 ',
+    'E': '"',
+    'F': 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890	 ',
     ' ': ' ',
-    'S': 'H',
+    'S': '.',
+    'T': 'H',
 }
 
 keywords = {
     'NEWLINE': '\\n',
     'si': 'if',
-    'SI': 'IF',
     'para': 'for',
+    'mientras': 'while',
+    'MIENTRAS': 'WHILE',
+    'Mientras': 'While',
 }
 
 tokens_expreg = {
     'identificador': 'A«A¦B»±',
     'numero': 'B«B»±',
-    'numeroHex': 'C«C»±S',
-    'tabulador': 'D',
+    'numeroDecimal': 'B«B»±SB«B»±',
+    'numeroHex': 'C«C»±T',
+    'espacioEnBlanco': 'D«D»±',
+    'cadena': 'EF«F»±E',
     'space': ' ',
 }
 
@@ -88,7 +95,7 @@ def centinela(entry_file_lines, line, line_index):
 
     return analyzed_lines
 
-entry_file = open('./ArchivoPrueba2Entrada.txt', 'r')
+entry_file = open('./ArchivoPrueba3Entrada.txt', 'r')
 entry_file_lines = entry_file.readlines()
 entry_file.close()
 

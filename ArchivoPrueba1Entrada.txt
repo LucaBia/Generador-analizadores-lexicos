@@ -1,1 +1,3 @@
 0 1 abc ihgfe d1 110 if fi 01
+
+//Salida: numero numero id id id numero if id numero
