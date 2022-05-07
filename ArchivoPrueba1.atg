@@ -1,0 +1,17 @@
+COMPILER ArchivoPrueba1
+
+CHARACTERS 
+
+letra = "abcdefghi".
+digito = "01".
+
+KEYWORDS
+
+if = "if".
+
+TOKENS
+
+id = letra{letra|digito} EXCEPT KEYWORDS.
+numero = digito{digito}.
+
+END ArchivoPrueba1

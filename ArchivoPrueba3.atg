@@ -1,0 +1,30 @@
+COMPILER ArchivoPrueba3
+
+CHARACTERS 
+
+letra = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".
+digito = "01234567890".
+digitoHex = digito + "ABCDEF".
+enBlanco = CHR(9) + CHR(32).
+comillas = CHR(34).
+cualquiera = letra + digito + enBlanco.
+
+
+KEYWORDS
+
+si = "if".
+para = "for".
+mientras = "while".
+MIENTRAS = "WHILE".
+Mientras = "While".
+
+TOKENS
+
+identificador = letra{letra|digito} EXCEPT KEYWORDS.
+numero = digito{digito}.
+numeroDecimal = digito{digito}"."digito{digito}.
+numeroHex = digitoHex{digitoHex}"H".
+espacioEnBlanco = enBlanco{enBlanco}.
+cadena = comillas cualquiera{cualquiera} comillas.
+
+END ArchivoPrueba3
