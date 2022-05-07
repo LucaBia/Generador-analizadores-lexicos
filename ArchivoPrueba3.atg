@@ -22,7 +22,7 @@ TOKENS
 
 identificador = letra{letra|digito} EXCEPT KEYWORDS.
 numero = digito{digito}.
-numeroDecimal = digito{digito}"."digito{digito}.
+numeroDecimal = digito{digito}"."digito{digito}"D".
 numeroHex = digitoHex{digitoHex}"H".
 espacioEnBlanco = enBlanco{enBlanco}.
 cadena = comillas cualquiera{cualquiera} comillas.

@@ -1,7 +1,6 @@
 from afd import AFD
 import tkinter as tk
-from tkinter import scrolledtext as st
-ANY_BUT_QUOTES = '«««««««««««««««l¦d»¦s»¦o»¦ »¦(»¦)»¦/»¦*»¦=»¦.»¦|»¦[»¦]»¦{»¦}»'
+from tkinter import scrolledtext as st 
 
 characters = {
     'A': 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
@@ -27,14 +26,14 @@ tokens_expreg = {
     'space': ' ',
 }
 
-TOKENS = []
+tokens = []
 
 def tipo_token(word):
     if word in keywords.values():
         return 'KEYWORD'
     else:
         for token_type, re in tokens_expreg.items():
-            if AFD(re.replace('a', ANY_BUT_QUOTES)).accepts(word, characters):
+            if AFD(re.replace('a', '«««««««««««««««l¦d»¦s»¦o»¦ »¦(»¦)»¦/»¦*»¦=»¦.»¦|»¦[»¦]»¦{»¦}»')).accepts(word, characters):
                 return token_type
     return 'ERROR'
 
@@ -76,17 +75,11 @@ def centinela(entry_file_lines, line, line_index):
 
 
         if current_token and current_token['type'] != 'ERROR':
-            # print(current_token)
-            TOKENS.append(current_token)
+            tokens.append(current_token)
             current_line_recognized_tokens.append(current_token)
-        else:
-            print(current_token)
-
             if line_position == len(line) + 1 and len(current_line_recognized_tokens) != 0:
-                TOKENS.append(current_token)
+                tokens.append(current_token)
 
-            # Si se llega al final de la linea y no se reconoce ningun token,
-            # se agrega la siguiente linea y se vuelve a intentar.
             if line_position == len(line) + 1 and len(current_line_recognized_tokens) == 0:
                 if line_index < len(entry_file_lines) - 1:
                     new_line = line + ' ' + entry_file_lines[line_index + 1].replace('\n', '\\n')
@@ -99,38 +92,21 @@ entry_file = open('./ArchivoPrueba2Entrada.txt', 'r')
 entry_file_lines = entry_file.readlines()
 entry_file.close()
 
-# -------------------------------------------------------
-# GET TOKENS
-# -------------------------------------------------------
 line_index = 0
 while line_index < len(entry_file_lines):
     line = entry_file_lines[line_index].replace('\n', '\\n')
     analyzed_lines = centinela(entry_file_lines, line, line_index)
     line_index += analyzed_lines
 
-print('\n\nTokens found:')
-for token in TOKENS:
-    if token['type'] == 'ERROR':
-        print(token)
-    else:
-        print(token)
-
-# -------------------------------------------------------
-# GET TOKENS
-# -------------------------------------------------------
-lexical_errors = False
-print('\n\nLexical errors:')
-for token in TOKENS:
+for token in tokens:
     if token['type'] == 'ERROR':
         print(f'Lexical error on line {token["line"]}: {token["value"]}')
-        lexical_errors = True
-
 window = tk.Tk()
 window.title('Tokens')
 window.geometry('500x250')  
 text_area = st.ScrolledText(window, width = 60, height = 15, font = ('Times New Roman',15), foreground = 'white')
 text_area.grid(column = 1, row = 1, columnspan=2)
-for token in TOKENS:
+for token in tokens:
     if token['type'] == 'KEYWORD':
         if token['value'] == '\\n':
             text_area.insert(tk.INSERT, '\n')

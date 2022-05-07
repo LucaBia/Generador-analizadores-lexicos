@@ -10,24 +10,21 @@ import os
 from afd import AFD
 
 
+# https://ssw.jku.at/Research/Projects/Coco/
+# https://ssw.jku.at/Research/Projects/Coco/Doc/UserManual.pdf
+
+
+nombre_compilador = ''
 
 scanner_lineas = []
 file_lines = []
 tokens = []
-tokens_clean = []
-current_token_index = 0
-symbols = {}
+tokens_filtrados = []
 
-nombre_compilador = ''
 characters_extraidos = {}
 keywords_extraidos = {}
 tokens_expreg_extraidos = {}
-
-# https://ssw.jku.at/Research/Projects/Coco/
-# https://ssw.jku.at/Research/Projects/Coco/Doc/UserManual.pdf
-
-# Cualquier cosa menos "" ''
-ANY_BUT_QUOTES = '«««««««««««««««l¦d»¦s»¦o»¦ »¦(»¦)»¦/»¦*»¦=»¦.»¦|»¦[»¦]»¦{»¦}»'
+symbols = {}
 
 characters = {
     ' ': ' ',
@@ -93,7 +90,6 @@ tokens_expreg = {
 }
 
 
-
 def browseFiles():
     filename = filedialog.askopenfilename(initialdir = "./", title = "Select a File", filetypes = (("CocoL files", "*.atg"), ("all files", "*.*")))
     filename_splited = filename.split("/")
@@ -121,7 +117,8 @@ def tipo_token(word):
         return 'KEYWORD'
     else:
         for token_type, re in tokens_expreg.items():
-            if AFD(re.replace('a', ANY_BUT_QUOTES)).accepts(word, characters):
+            # Cualquier cosa menos "" ''
+            if AFD(re.replace('a', '«««««««««««««««l¦d»¦s»¦o»¦ »¦(»¦)»¦/»¦*»¦=»¦.»¦|»¦[»¦]»¦{»¦}»')).accepts(word, characters):
                 return token_type
     return 'ERROR'
 
@@ -259,7 +256,7 @@ def generador_diccionario():
             token_index += 2
             continue
         else:
-            tokens_clean.append(token)
+            tokens_filtrados.append(token)
 
     global nombre_compilador
     nombre_compilador = ''
@@ -276,13 +273,13 @@ def generador_diccionario():
     tokens_expreg_extraidos = {}
 
     token_index = 0
-    while token_index < len(tokens_clean):
-        token = tokens_clean[token_index]
+    while token_index < len(tokens_filtrados):
+        token = tokens_filtrados[token_index]
         if token["type"] == 'KEYWORD':
             if token["value"] == 'COMPILER':
-                nombre_compilador = tokens_clean[token_index + 1]["value"]
+                nombre_compilador = tokens_filtrados[token_index + 1]["value"]
             elif token["value"] == 'END':
-                if nombre_compilador != tokens_clean[token_index + 1]["value"]:
+                if nombre_compilador != tokens_filtrados[token_index + 1]["value"]:
                     text_area.insert(tk.INSERT, "Error sintáctico: Nombre de archivo no coincide", "\n")
             # Lee toda la seccion de Characters del cocol
             elif token["value"] == 'CHARACTERS':
@@ -291,7 +288,7 @@ def generador_diccionario():
                 character_section_definitions = []
                 while True:
                     # Iterate until end of characters section tokens
-                    temp_token = tokens_clean[token_index + count + 1]
+                    temp_token = tokens_filtrados[token_index + count + 1]
 
                     # final es el punto
                     if temp_token["type"] == 'final':
@@ -328,12 +325,12 @@ def generador_diccionario():
 
                     characters_extraidos[definition_tokens[0]["value"]] = value
 
-            elif token["value"] == 'KEYWORDS' and tokens_clean[token_index + 1]["type"] != 'final':
+            elif token["value"] == 'KEYWORDS' and tokens_filtrados[token_index + 1]["type"] != 'final':
                 count = 0
                 keyword_definition_tokens = []
                 keyword_section_definitions = []
                 while True:
-                    temp_token = tokens_clean[token_index + count + 1]
+                    temp_token = tokens_filtrados[token_index + count + 1]
 
                     if temp_token["type"] == 'final':
                         keyword_section_definitions.append(keyword_definition_tokens)
@@ -361,7 +358,7 @@ def generador_diccionario():
                 token_re_definition_tokens = []
                 token_re_section_definitions = []
                 while True:
-                    temp_token = tokens_clean[token_index + count + 1]
+                    temp_token = tokens_filtrados[token_index + count + 1]
 
                     if temp_token["type"] == 'final':
                         token_re_section_definitions.append(token_re_definition_tokens)
@@ -409,6 +406,10 @@ def lecutra_cocol():
         cont += 1
         cont_com = 0
         regpunto = re.search(r'[\.]$', i)
+
+        if len(i) <= 3 and i != "\n":
+            text_area.insert(tk.INSERT, f"Error en la línea {cont}: {i}")
+
         if regpunto == None and i != "\n" and cont != 1 and cont != len(entry_file_lines):
             if i.isupper():
                 pass
@@ -458,9 +459,7 @@ def lecutra_cocol():
 def scanner():
     scanner_lineas.append("from afd import AFD")
     scanner_lineas.append("import tkinter as tk")
-    scanner_lineas.append("from tkinter import scrolledtext as st")
-
-    scanner_lineas.append("ANY_BUT_QUOTES = '«««««««««««««««l¦d»¦s»¦o»¦ »¦(»¦)»¦/»¦*»¦=»¦.»¦|»¦[»¦]»¦{»¦}»'\n")
+    scanner_lineas.append("from tkinter import scrolledtext as st \n")
 
     scanner_lineas.append("characters = {")
     for key, value in characters_extraidos.items():
@@ -477,14 +476,14 @@ def scanner():
         scanner_lineas.append(f"    '{key}': '{value}',")
     scanner_lineas.append("}\n")
 
-    scanner_lineas.append("TOKENS = []\n")
+    scanner_lineas.append("tokens = []\n")
 
     scanner_lineas.append("def tipo_token(word):")
     scanner_lineas.append("    if word in keywords.values():")
     scanner_lineas.append("        return 'KEYWORD'")
     scanner_lineas.append("    else:")
     scanner_lineas.append("        for token_type, re in tokens_expreg.items():")
-    scanner_lineas.append("            if AFD(re.replace('a', ANY_BUT_QUOTES)).accepts(word, characters):")
+    scanner_lineas.append("            if AFD(re.replace('a', '«««««««««««««««l¦d»¦s»¦o»¦ »¦(»¦)»¦/»¦*»¦=»¦.»¦|»¦[»¦]»¦{»¦}»')).accepts(word, characters):")
     scanner_lineas.append("                return token_type")
     scanner_lineas.append("    return 'ERROR'\n")
 
@@ -529,17 +528,12 @@ def scanner():
 
 
     scanner_lineas.append("        if current_token and current_token['type'] != 'ERROR':")
-    scanner_lineas.append("            # print(current_token)")
-    scanner_lineas.append("            TOKENS.append(current_token)")
+    scanner_lineas.append("            tokens.append(current_token)")
     scanner_lineas.append("            current_line_recognized_tokens.append(current_token)")
-    scanner_lineas.append("        else:")
-    scanner_lineas.append("            print(current_token)\n")
 
     scanner_lineas.append("            if line_position == len(line) + 1 and len(current_line_recognized_tokens) != 0:")
-    scanner_lineas.append("                TOKENS.append(current_token)\n")
+    scanner_lineas.append("                tokens.append(current_token)\n")
 
-    scanner_lineas.append("            # Si se llega al final de la linea y no se reconoce ningun token,")
-    scanner_lineas.append("            # se agrega la siguiente linea y se vuelve a intentar.")
     scanner_lineas.append("            if line_position == len(line) + 1 and len(current_line_recognized_tokens) == 0:")
     scanner_lineas.append("                if line_index < len(entry_file_lines) - 1:")
     scanner_lineas.append("                    new_line = line + ' ' + entry_file_lines[line_index + 1].replace('\\n', '\\\\n')")
@@ -554,31 +548,16 @@ def scanner():
     scanner_lineas.append("entry_file_lines = entry_file.readlines()")
     scanner_lineas.append("entry_file.close()\n")
 
-    scanner_lineas.append("# -------------------------------------------------------")
-    scanner_lineas.append("# GET TOKENS")
-    scanner_lineas.append("# -------------------------------------------------------")
     scanner_lineas.append("line_index = 0")
     scanner_lineas.append("while line_index < len(entry_file_lines):")
     scanner_lineas.append("    line = entry_file_lines[line_index].replace('\\n', '\\\\n')")
     scanner_lineas.append("    analyzed_lines = centinela(entry_file_lines, line, line_index)")
     scanner_lineas.append("    line_index += analyzed_lines\n")
 
-    scanner_lineas.append("print('\\n\\nTokens found:')")
-    scanner_lineas.append("for token in TOKENS:")
-    scanner_lineas.append("    if token['type'] == 'ERROR':")
-    scanner_lineas.append("        print(token)")
-    scanner_lineas.append("    else:")
-    scanner_lineas.append("        print(token)\n")
 
-    scanner_lineas.append("# -------------------------------------------------------")
-    scanner_lineas.append("# GET TOKENS")
-    scanner_lineas.append("# -------------------------------------------------------")
-    scanner_lineas.append("lexical_errors = False")
-    scanner_lineas.append("print('\\n\\nLexical errors:')")
-    scanner_lineas.append("for token in TOKENS:")
+    scanner_lineas.append("for token in tokens:")
     scanner_lineas.append("    if token['type'] == 'ERROR':")
     scanner_lineas.append("        print(f'Lexical error on line {token[\"line\"]}: {token[\"value\"]}')")
-    scanner_lineas.append("        lexical_errors = True\n")
 
 
     # Se muestran los tokens en una nueva ventana
@@ -588,7 +567,7 @@ def scanner():
     scanner_lineas.append("text_area = st.ScrolledText(window, width = 60, height = 15, font = ('Times New Roman',15), foreground = 'white')")
     scanner_lineas.append("text_area.grid(column = 1, row = 1, columnspan=2)")
 
-    scanner_lineas.append("for token in TOKENS:")
+    scanner_lineas.append("for token in tokens:")
     scanner_lineas.append("    if token['type'] == 'KEYWORD':")
     scanner_lineas.append("        if token['value'] == '\\\\n':")
     scanner_lineas.append("            text_area.insert(tk.INSERT, '\\n')")
